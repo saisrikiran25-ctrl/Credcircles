@@ -30,6 +30,7 @@ export default function HomePage() {
   const { currentUser, refreshTrigger, triggerRefresh } = useApp();
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Modals state
   const [isContributeOpen, setIsContributeOpen] = useState(false);
@@ -40,6 +41,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setIsLoading(true);
+    setLoadError(false);
     fetch(`/api/bootstrap?userId=${currentUser.id}`)
       .then((res) => res.json())
       .then((res) => {
@@ -48,6 +50,7 @@ export default function HomePage() {
       })
       .catch((err) => {
         console.error('Error fetching home data:', err);
+        setLoadError(true);
         setIsLoading(false);
       });
   }, [currentUser.id, refreshTrigger]);
@@ -92,7 +95,7 @@ export default function HomePage() {
     }
   };
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <div className="h-40 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
@@ -101,6 +104,39 @@ export default function HomePage() {
       </div>
     );
   }
+
+  if (!data && loadError) {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/60">
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            This GitHub Pages deployment is static.
+          </p>
+          <p className="text-xs mt-1 text-amber-800 dark:text-amber-300">
+            Server-backed API features (Prisma database, voting, lending, and ledger updates) require a
+            Node.js backend and are unavailable on static hosting.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/profile"
+            className="p-3 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 text-center"
+          >
+            Open Profile
+          </Link>
+          <Link
+            href="/profile/risk"
+            className="p-3 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 text-center"
+          >
+            Open Risk Score
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   const { myPosition, upcomingDues, pendingVotes, circles, user } = data;
   const primaryCircle = circles?.[0];
@@ -356,7 +392,7 @@ export default function HomePage() {
                   Reject
                 </button>
                 <Link
-                  href={`/loans/${req.id}`}
+                  href={`/loans/detail?id=${req.id}`}
                   className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg text-xs"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -380,7 +416,7 @@ export default function HomePage() {
               </h3>
             </div>
             <Link
-              href={`/circles/${primaryCircle.id}`}
+              href={`/circles/detail?id=${primaryCircle.id}`}
               className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-0.5"
             >
               View Circle

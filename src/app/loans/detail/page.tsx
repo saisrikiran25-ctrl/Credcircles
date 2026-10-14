@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -24,12 +25,9 @@ import { formatPaise } from '@/lib/domain/currency';
 import { UpiPaymentModal } from '@/components/modals/UpiPaymentModal';
 import { LoanAgreementModal } from '@/components/modals/LoanAgreementModal';
 
-export default function LoanDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+function LoanDetailPageContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const { currentUser, refreshTrigger, triggerRefresh } = useApp();
 
   const [data, setData] = useState<any>(null);
@@ -51,6 +49,10 @@ export default function LoanDetailPage({
   const [restructureReason, setRestructureReason] = useState('Temporary hardship relief discussed with circle peers.');
 
   useEffect(() => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     fetch(`/api/loans/${id}`)
       .then((res) => res.json())
@@ -605,5 +607,20 @@ export default function LoanDetailPage({
         </div>
       )}
     </div>
+  );
+}
+
+export default function LoanDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4 space-y-4">
+          <div className="h-10 w-36 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
+          <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
+        </div>
+      }
+    >
+      <LoanDetailPageContent />
+    </Suspense>
   );
 }

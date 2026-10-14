@@ -53,7 +53,7 @@ export async function POST(
             title: `Loan Restructured: ${loan.borrower.name}`,
             message: `Circle approved restructured ${proposedTenureMonths}-month tenure for ${loan.borrower.name}.`,
             type: 'SYSTEM',
-            linkUrl: `/loans/${loan.id}`,
+            linkUrl: `/loans/detail?id=${loan.id}`,
           },
         });
       }

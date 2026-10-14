@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   Users,
@@ -25,12 +26,9 @@ import { CircleDonutGauge } from '@/components/ui/CircleDonutGauge';
 import { ContributeModal } from '@/components/modals/ContributeModal';
 import { RiskSharingExplainerModal } from '@/components/modals/RiskSharingExplainerModal';
 
-export default function CircleDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+function CircleDetailPageContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const { currentUser, refreshTrigger, triggerRefresh } = useApp();
 
   const [data, setData] = useState<any>(null);
@@ -44,6 +42,10 @@ export default function CircleDetailPage({
   const [isRiskExplainerOpen, setIsRiskExplainerOpen] = useState(false);
 
   useEffect(() => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     fetch(`/api/circles/${id}`)
       .then((res) => res.json())
@@ -286,7 +288,7 @@ export default function CircleDetailPage({
               circle.loanRequests?.map((req: any) => (
                 <Link
                   key={req.id}
-                  href={`/loans/${req.id}`}
+                  href={`/loans/detail?id=${req.id}`}
                   className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 block hover:border-indigo-500 transition-all space-y-2"
                 >
                   <div className="flex items-center justify-between">
@@ -573,5 +575,20 @@ export default function CircleDetailPage({
         onClose={() => setIsRiskExplainerOpen(false)}
       />
     </div>
+  );
+}
+
+export default function CircleDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4 space-y-4">
+          <div className="h-10 w-36 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
+          <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
+        </div>
+      }
+    >
+      <CircleDetailPageContent />
+    </Suspense>
   );
 }

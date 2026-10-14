@@ -90,7 +90,7 @@ export default function NewLoanRequestPage() {
       const data = await res.json();
       if (res.ok) {
         triggerRefresh();
-        router.push(`/loans/${data.loanRequest.id}`);
+        router.push(`/loans/detail?id=${data.loanRequest.id}`);
       } else {
         setErrorMsg(data.error || 'Failed to submit loan request');
       }
