@@ -1,0 +1,326 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String              @id @default(cuid())
+  name             String
+  phone            String              @unique
+  email            String?
+  city             String              // Hyderabad, Bengaluru, Pune, Delhi NCR, Mumbai, Chennai, Ahmedabad
+  segment          String              // COLLEGE_STUDENT, YOUNG_PROFESSIONAL, CAMPUS_CLUB, MICROENTREPRENEUR
+  upiVpa           String              // e.g. name@upi
+  institution      String?             // College or employer
+  isVerified       Boolean             @default(false)
+  avatarUrl        String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  kycRecords       KycRecord[]
+  memberships      Membership[]
+  contributions    Contribution[]
+  loanRequests     LoanRequest[]       @relation("BorrowerRequests")
+  votes            Vote[]
+  disbursements    Disbursement[]      @relation("LenderDisbursements")
+  repayments       Repayment[]         @relation("PayerRepayments")
+  mandates         Mandate[]
+  riskSnapshots    RiskScoreSnapshot[]
+  notifications    Notification[]
+  comments         Comment[]
+  createdCircles   Circle[]            @relation("CreatedCircles")
+  createdInvites   Invite[]
+  borrowedLoans    Loan[]              @relation("LoanBorrower")
+}
+
+model KycRecord {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentType   String    // PAN, AADHAAR
+  maskedNumber   String    // e.g. ABCDE****F or ********1234
+  status         String    @default("VERIFIED") // VERIFIED, PENDING, REJECTED
+  verifiedAt     DateTime  @default(now())
+}
+
+model Circle {
+  id                     String                @id @default(cuid())
+  name                   String
+  description            String?
+  type                   String                // College group, Hostel group, Friend circle, Young professionals' group, Campus club/team
+  city                   String                @default("Hyderabad")
+  createdById            String
+  createdBy              User                  @relation("CreatedCircles", fields: [createdById], references: [id])
+  maxLoanAmount          Int                   @default(2000000) // in paise (e.g. ₹20,000)
+  interestRatePct        Float                 @default(10.0)    // default 8-12% p.a.
+  approvalThresholdPct   Float                 @default(70.0)    // default 70%
+  latePenaltyType        String                @default("FLAT")  // FLAT or PERCENTAGE
+  latePenaltyValue       Int                   @default(5000)    // ₹50 flat (5000 paise) or % basis
+  complianceMode         String                @default("PARTNERED_ESCROW") // PARTNERED_ESCROW (Mode A) or CLOSED_CIRCLES (Mode C)
+  isPremium              Boolean               @default(false)
+  poolBalance            Int                   @default(0)       // tracked in paise
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  memberships            Membership[]
+  contributions          Contribution[]
+  loanRequests           LoanRequest[]
+  loans                  Loan[]
+  ledgerEntries          LedgerEntry[]
+  invites                Invite[]
+  premiumSubscriptions   PremiumSubscription[]
+}
+
+model Membership {
+  id        String    @id @default(cuid())
+  circleId  String
+  circle    Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String    @default("MEMBER") // ADMIN, MEMBER
+  status    String    @default("ACTIVE") // ACTIVE, PENDING, REMOVED
+  joinedAt  DateTime  @default(now())
+
+  @@unique([circleId, userId])
+}
+
+model Contribution {
+  id             String    @id @default(cuid())
+  circleId       String
+  circle         Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount         Int       // in paise (e.g. 50000 = ₹500, max 500000 = ₹5,000)
+  simulatedUpiRef String
+  status         String    @default("COMPLETED") // COMPLETED, PENDING
+  note           String?
+  createdAt      DateTime  @default(now())
+}
+
+model LoanRequest {
+  id                   String                 @id @default(cuid())
+  circleId             String
+  circle               Circle                 @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  borrowerId           String
+  borrower             User                   @relation("BorrowerRequests", fields: [borrowerId], references: [id])
+  amount               Int                    // in paise (500000 to 2000000 paise -> ₹5,000 - ₹20,000)
+  purpose              String                 // education/fees, skills/upskilling, emergency, micro-business, gadgets/lifestyle, event/club
+  tenureMonths         Int                    // 1 - 6 months
+  proposedInterestPct  Float                  // 8 - 12% p.a.
+  status               String                 @default("VOTING") // VOTING, APPROVED, REJECTED, DISBURSED, CANCELLED
+  isExternal           Boolean                @default(false)
+  externalVetted       Boolean                @default(false)
+  votingDeadline       DateTime
+  approvedAt           DateTime?
+  rejectedAt           DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  votes                Vote[]
+  comments             Comment[]
+  loan                 Loan?
+}
+
+model Vote {
+  id            String       @id @default(cuid())
+  loanRequestId String
+  loanRequest   LoanRequest  @relation(fields: [loanRequestId], references: [id], onDelete: Cascade)
+  voterId       String
+  voter         User         @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  decision      String       // APPROVE, REJECT
+  comment       String?
+  createdAt     DateTime     @default(now())
+
+  @@unique([loanRequestId, voterId])
+}
+
+model Loan {
+  id                   String                @id @default(cuid())
+  loanRequestId        String                @unique
+  loanRequest          LoanRequest           @relation(fields: [loanRequestId], references: [id], onDelete: Cascade)
+  circleId             String
+  circle               Circle                @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  borrowerId           String
+  borrower             User                  @relation("LoanBorrower", fields: [borrowerId], references: [id])
+  principalAmount      Int                   // in paise
+  interestRatePct      Float
+  platformFeeAmount    Int                   // in paise (1.0% - 2.5%, default 1.5%)
+  tenureMonths         Int
+  status               String                @default("DISBURSED") // DISBURSED, ACTIVE, REPAID, OVERDUE, RESTRUCTURED, DEFAULTED
+  disbursedAt          DateTime              @default(now())
+  totalRepayable       Int                   // principal + interest in paise
+  outstandingBalance   Int                   // remaining unpaid principal + interest in paise
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  disbursements        Disbursement[]
+  instalments          Instalment[]
+  repayments           Repayment[]
+  mandates             Mandate[]
+  restructureProposals RestructureProposal[]
+  platformFees         PlatformFee[]
+}
+
+model Disbursement {
+  id                 String    @id @default(cuid())
+  loanId             String
+  loan               Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  lenderId           String
+  lender             User      @relation("LenderDisbursements", fields: [lenderId], references: [id])
+  amount             Int       // in paise
+  upiTransactionRef  String
+  status             String    @default("SUCCESS") // SUCCESS, PENDING, FAILED
+  completedAt        DateTime  @default(now())
+}
+
+model Instalment {
+  id                String       @id @default(cuid())
+  loanId            String
+  loan              Loan         @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  instalmentNumber  Int
+  dueDate           DateTime
+  principalDue      Int          // in paise
+  interestDue       Int          // in paise
+  totalDue          Int          // in paise
+  principalPaid     Int          @default(0)
+  interestPaid      Int          @default(0)
+  penaltyDue        Int          @default(0)
+  penaltyPaid       Int          @default(0)
+  status            String       @default("UPCOMING") // UPCOMING, DUE, OVERDUE, PAID, RESTRUCTURED
+  paidAt            DateTime?
+
+  repayments        Repayment[]
+}
+
+model Repayment {
+  id                 String      @id @default(cuid())
+  loanId             String
+  loan               Loan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  instalmentId       String?
+  instalment         Instalment? @relation(fields: [instalmentId], references: [id])
+  payerId            String
+  payer              User        @relation("PayerRepayments", fields: [payerId], references: [id])
+  principalAmount    Int         // in paise
+  interestAmount     Int         // in paise
+  penaltyAmount      Int         @default(0)
+  totalAmount        Int         // in paise
+  paymentMethod      String      // MANUAL_UPI, AUTOPAY_MANDATE
+  simulatedUpiRef    String
+  status             String      @default("SUCCESS") // SUCCESS, FAILED
+  paidAt             DateTime    @default(now())
+}
+
+model Mandate {
+  id             String    @id @default(cuid())
+  loanId         String
+  loan           Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  borrowerId     String
+  borrower       User      @relation(fields: [borrowerId], references: [id])
+  vpa            String
+  maxAmount      Int       // in paise
+  status         String    @default("ACTIVE") // ACTIVE, PENDING, CANCELLED, FAILED
+  umrn           String    // Unique Mandate Reference Number (simulated)
+  frequency      String    @default("MONTHLY")
+  createdAt      DateTime  @default(now())
+}
+
+model LedgerEntry {
+  id             String    @id @default(cuid())
+  circleId       String
+  circle         Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  actorId        String?
+  actorName      String?
+  type           String    // CONTRIBUTION, DISBURSEMENT, REPAYMENT_PRINCIPAL, REPAYMENT_INTEREST, LATE_PENALTY, PLATFORM_FEE, REVERSAL
+  amount         Int       // in paise
+  balanceAfter   Int       // circle logical pool balance after entry in paise
+  status         String    @default("RECORDED") // RECORDED, REVERSED
+  referenceId    String    // e.g. contribution id, loan id, repayment id, or UPI ref
+  description    String
+  createdAt      DateTime  @default(now())
+}
+
+model RiskScoreSnapshot {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score              Int       // 0 - 100
+  riskBand           String    // LOW, MEDIUM, HIGH
+  repaymentFactor    Float     // sub-score component
+  tenureFactor       Float
+  approvalFactor     Float
+  exposureFactor     Float
+  verificationFactor Float
+  notes              String?
+  calculatedAt       DateTime  @default(now())
+}
+
+model RestructureProposal {
+  id                    String    @id @default(cuid())
+  loanId                String
+  loan                  Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  proposedTenureMonths  Int
+  newInterestPct        Float
+  reason                String
+  status                String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt             DateTime  @default(now())
+}
+
+model Notification {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  circleId   String?
+  title      String
+  message    String
+  type       String    // VOTE_REQUEST, PAYMENT_DUE, OVERDUE_ALERT, DISBURSEMENT_SUCCESS, NUDGE, SYSTEM
+  read       Boolean   @default(false)
+  linkUrl    String?
+  createdAt  DateTime  @default(now())
+}
+
+model Invite {
+  id            String    @id @default(cuid())
+  circleId      String
+  circle        Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  code          String    @unique
+  inviterId     String
+  inviter       User      @relation(fields: [inviterId], references: [id])
+  emailOrPhone  String?
+  status        String    @default("PENDING") // PENDING, ACCEPTED, EXPIRED
+  createdAt     DateTime  @default(now())
+}
+
+model Comment {
+  id            String       @id @default(cuid())
+  loanRequestId String
+  loanRequest   LoanRequest  @relation(fields: [loanRequestId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message       String
+  createdAt     DateTime     @default(now())
+}
+
+model PremiumSubscription {
+  id         String    @id @default(cuid())
+  circleId   String
+  circle     Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  planName   String    @default("Circle Pro")
+  monthlyFee Int       @default(9900) // ₹99 in paise (range ₹50-₹200)
+  status     String    @default("ACTIVE")
+  startedAt  DateTime  @default(now())
+  expiresAt  DateTime
+}
+
+model PlatformFee {
+  id         String    @id @default(cuid())
+  loanId     String
+  loan       Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  amount     Int       // in paise (1.5% of principal)
+  percentage Float     @default(1.5)
+  status     String    @default("COLLECTED")
+  createdAt  DateTime  @default(now())
+}
