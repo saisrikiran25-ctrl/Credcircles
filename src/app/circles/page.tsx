@@ -195,7 +195,7 @@ export default function CirclesListPage() {
                 )}
 
                 <Link
-                  href={`/circles/${circle.id}`}
+                  href={`/circles/detail?id=${circle.id}`}
                   className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/80 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all"
                 >
                   View Details

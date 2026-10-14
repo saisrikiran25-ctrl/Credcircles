@@ -142,7 +142,7 @@ export default function CreateCirclePage() {
               Copy Code
             </button>
             <Link
-              href={`/circles/${createdResult.circle?.id}`}
+              href={`/circles/detail?id=${createdResult.circle?.id}`}
               className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-1.5 shadow-md transition-all"
             >
               Open Circle

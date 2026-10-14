@@ -96,7 +96,7 @@ export async function POST(
           title: 'Loan Request Approved!',
           message: `Your request for ₹${(loanRequest.amount / 100).toLocaleString('en-IN')} achieved the circle approval threshold (${loanRequest.circle.approvalThresholdPct}%). Ready for disbursement.`,
           type: 'DISBURSEMENT_SUCCESS',
-          linkUrl: `/loans/${loanRequest.id}`,
+          linkUrl: `/loans/detail?id=${loanRequest.id}`,
         },
       });
     } else if (evaluation.isRejected || (forceClose && !evaluation.isApproved)) {

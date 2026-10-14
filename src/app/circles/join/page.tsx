@@ -36,7 +36,7 @@ export default function JoinCirclePage() {
       const data = await res.json();
       if (res.ok) {
         triggerRefresh();
-        router.push(`/circles/${data.circleId}`);
+        router.push(`/circles/detail?id=${data.circleId}`);
       } else {
         setErrorMsg(data.error || 'Failed to join circle');
       }

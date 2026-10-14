@@ -153,7 +153,7 @@ export async function POST(request: Request) {
           title: `New Loan Request: ${borrower.name}`,
           message: `${borrower.name} requested ₹${(Number(amountPaise) / 100).toLocaleString('en-IN')} for ${purpose}. Cast your vote.`,
           type: 'VOTE_REQUEST',
-          linkUrl: `/loans/${loanRequest.id}`,
+          linkUrl: `/loans/detail?id=${loanRequest.id}`,
         },
       });
     }

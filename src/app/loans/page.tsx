@@ -107,7 +107,7 @@ export default function LoansPage() {
             return (
               <Link
                 key={req.id}
-                href={`/loans/${req.id}`}
+                href={`/loans/detail?id=${req.id}`}
                 className="p-4 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-subtle hover:shadow-card transition-all block space-y-2.5"
               >
                 <div className="flex items-start justify-between">

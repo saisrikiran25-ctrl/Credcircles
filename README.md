@@ -117,6 +117,33 @@ npm run build
 
 ---
 
+## 🌍 Public Deployment on GitHub Pages
+
+This repository now includes `.github/workflows/deploy-pages.yml` to publish a static export of the Next.js app to:
+
+- **Project site URL:** `https://saisrikiran25-ctrl.github.io/Credcircles/`
+
+### One-time repository setup
+
+1. Open **GitHub → Settings → Pages** for `saisrikiran25-ctrl/Credcircles`.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Merge/push the deployment workflow to `main`.
+
+### Deployment flow
+
+1. Push/merge changes to `main`.
+2. GitHub Actions runs **Deploy Next.js static site to GitHub Pages**.
+3. The workflow installs dependencies using `npm ci` (`package-lock.json`), runs `npm run build`, uploads `out/`, and deploys to the `github-pages` environment.
+4. Open **Actions** to monitor status; after success, open the URL above.
+
+### Static-hosting limitations for this repository
+
+GitHub Pages only serves static files. This app's API route handlers in `src/app/api/**` depend on Prisma/database-backed server execution, so they are **not available** on Pages. As a result, server-backed features (loan voting/disbursement/repayment, circle mutations, ledger exports, admin metrics, etc.) require running the app with a Node.js server (`npm run dev` or `npm run start`) and a seeded database.
+
+The Pages deployment is therefore a static frontend preview. The home screen now shows a clear notice when backend APIs are unavailable.
+
+---
+
 ## 👥 Seed Data & 1-Click Demo Personas
 
 The application includes a **1-Click Demo User Switcher** available directly in the top header and on the Profile tab. Reviewers can test different perspectives instantly without logging out:
