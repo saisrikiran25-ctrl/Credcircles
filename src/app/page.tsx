@@ -43,9 +43,18 @@ export default function HomePage() {
     setIsLoading(true);
     setLoadError(false);
     fetch(`/api/bootstrap?userId=${currentUser.id}`)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.statusText}`);
+        }
+        return res.json();
+      })
       .then((res) => {
-        setData(res);
+        if (res && res.user && res.myPosition) {
+          setData(res);
+        } else {
+          setLoadError(true);
+        }
         setIsLoading(false);
       })
       .catch((err) => {
@@ -136,9 +145,9 @@ export default function HomePage() {
     );
   }
 
-  if (!data) return null;
+  if (!data || !data.user || !data.myPosition) return null;
 
-  const { myPosition, upcomingDues, pendingVotes, circles, user } = data;
+  const { myPosition, upcomingDues = [], pendingVotes = [], circles = [], user } = data;
   const primaryCircle = circles?.[0];
 
   return (
@@ -150,15 +159,15 @@ export default function HomePage() {
             Welcome back,
           </span>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
-            {user.name}
-            {user.isVerified && (
+            {user?.name}
+            {user?.isVerified && (
               <span title="eKYC Verified" className="inline-flex items-center">
                 <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 inline" />
               </span>
             )}
           </h2>
           <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
-            {user.segment.replace(/_/g, ' ')} • {user.city}
+            {user?.segment ? user.segment.replace(/_/g, ' ') : ''} • {user?.city || ''}
           </span>
         </div>
 

@@ -31,9 +31,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Fetch notifications for active user
     fetch(`/api/bootstrap?userId=${currentUser.id}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
       .then((data) => {
-        if (data.notifications) setNotifications(data.notifications);
+        if (data && Array.isArray(data.notifications)) setNotifications(data.notifications);
       })
       .catch(() => {});
   }, [currentUser.id]);
