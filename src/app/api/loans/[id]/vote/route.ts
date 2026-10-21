@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'
+
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { evaluateLoanVotes } from '@/lib/domain/voting';

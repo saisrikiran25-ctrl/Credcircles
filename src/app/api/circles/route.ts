@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'
+
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { CIRCLE_TYPES, SUPPORTED_CITIES } from '@/lib/domain/rules';
