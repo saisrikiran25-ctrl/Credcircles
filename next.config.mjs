@@ -6,12 +6,17 @@ const basePath = isGitHubPagesBuild ? `/${repoName}` : '';
 const nextConfig = {
   reactStrictMode: true,
   output: isGitHubPagesBuild ? 'export' : undefined,
-  trailingSlash: true,
+  trailingSlash: isGitHubPagesBuild ? true : false,
   images: {
     unoptimized: true,
   },
   basePath,
   assetPrefix: isGitHubPagesBuild ? `${basePath}/` : undefined,
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./prisma/dev.db', './public/dev.db'],
+    },
+  },
 };
 
 export default nextConfig;

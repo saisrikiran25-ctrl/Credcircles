@@ -117,29 +117,24 @@ export default function HomePage() {
   if (!data && loadError) {
     return (
       <div className="p-4 space-y-4">
-        <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/60">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            This GitHub Pages deployment is static.
-          </p>
-          <p className="text-xs mt-1 text-amber-800 dark:text-amber-300">
-            Server-backed API features (Prisma database, voting, lending, and ledger updates) require a
-            Node.js backend and are unavailable on static hosting.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Link
-            href="/profile"
-            className="p-3 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 text-center"
+        <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              Unable to load account details
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Could not retrieve circle data for {currentUser.name}.
+            </p>
+          </div>
+          <button
+            onClick={() => triggerRefresh()}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
           >
-            Open Profile
-          </Link>
-          <Link
-            href="/profile/risk"
-            className="p-3 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 text-center"
-          >
-            Open Risk Score
-          </Link>
+            Retry Connection
+          </button>
         </div>
       </div>
     );
