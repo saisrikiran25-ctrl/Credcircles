@@ -13,9 +13,23 @@ import {
   ChevronRight,
   ShieldCheck,
   Calendar,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { formatPaise } from '@/lib/domain/currency';
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+  VOTING:      { label: 'Voting',    bg: 'bg-amber-500/10',   text: 'text-amber-500' },
+  APPROVED:    { label: 'Approved',  bg: 'bg-blue-500/10',    text: 'text-blue-500' },
+  DISBURSED:   { label: 'Active',    bg: 'bg-g-500/10',       text: 'text-g-500' },
+  ACTIVE:      { label: 'Active',    bg: 'bg-g-500/10',       text: 'text-g-500' },
+  OVERDUE:     { label: 'Overdue',   bg: 'bg-red-500/10',     text: 'text-red-500' },
+  RESTRUCTURED:{ label: 'Restructd', bg: 'bg-purple-500/10',  text: 'text-purple-500' },
+  REPAID:      { label: 'Repaid',    bg: 'bg-g-500/10',       text: 'text-g-500' },
+  DEFAULTED:   { label: 'Defaulted', bg: 'bg-red-500/10',     text: 'text-red-500' },
+  REJECTED:    { label: 'Rejected',  bg: 'bg-slate-500/10',   text: 'text-[var(--text-muted)]' },
+};
 
 export default function LoansPage() {
   const { currentUser, refreshTrigger } = useApp();
@@ -41,134 +55,152 @@ export default function LoansPage() {
     return true;
   });
 
+  const filterTabs = [
+    { id: 'ALL',    label: `All (${loans.length})` },
+    { id: 'VOTING', label: `Voting (${loans.filter(l => l.status === 'VOTING' || l.status === 'APPROVED').length})` },
+    { id: 'ACTIVE', label: `Active` },
+    { id: 'CLOSED', label: `Settled` },
+  ];
+
   return (
-    <div className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="animate-fade-in">
+
+      {/* ─── Header ─── */}
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Community Credit
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tickets ₹5k–₹20k • 8–12% p.a. • 1–6 months
+          <h1 className="text-lg font-bold text-[var(--text-primary)]">Community Credit</h1>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
+            ₹5k–₹20k · 8–12% p.a. · 1–6 months
           </p>
         </div>
-
         <Link
           href="/loans/new"
-          className="py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1 shadow-sm transition-all"
+          id="request-loan-btn"
+          className="py-2 px-3 bg-g-500 hover:bg-g-600 text-white font-semibold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
         >
-          <Plus className="w-4 h-4" />
-          Request Loan
+          <Plus className="w-3.5 h-3.5" />
+          Request
         </Link>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 text-xs">
-        {[
-          { id: 'ALL', label: 'All' },
-          { id: 'VOTING', label: 'In Voting' },
-          { id: 'ACTIVE', label: 'Active EMIs' },
-          { id: 'CLOSED', label: 'Settled' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id as any)}
-            className={`flex-1 py-1.5 rounded-xl font-bold transition-all ${
-              filter === tab.id
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* ─── Filter tabs ─── */}
+      <div className="px-4 pb-3">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.id}
+              id={`loan-filter-${tab.id.toLowerCase()}`}
+              onClick={() => setFilter(tab.id as any)}
+              className={`filter-pill ${filter === tab.id ? 'active' : ''}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Loans List */}
-      {isLoading ? (
-        <div className="space-y-3">
-          <div className="h-28 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
-          <div className="h-28 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
-        </div>
-      ) : filteredLoans.length === 0 ? (
-        <div className="p-8 text-center bg-white dark:bg-slate-800/40 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <VoteIcon className="w-10 h-10 text-slate-400 mx-auto" />
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm">No Loans Found</h3>
-          <p className="text-xs text-slate-500">No loan records match this filter.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredLoans.map((req) => {
-            const isVoting = req.status === 'VOTING';
-            const isOverdue = req.status === 'OVERDUE' || req.loan?.status === 'OVERDUE';
-            const isApproved = req.status === 'APPROVED';
+      <div className="section-divider" />
 
-            return (
-              <Link
-                key={req.id}
-                href={`/loans/detail?id=${req.id}`}
-                className="p-4 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-subtle hover:shadow-card transition-all block space-y-2.5"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="font-bold text-xs text-slate-900 dark:text-white">
-                        {req.borrower?.name}
-                      </span>
-                      {req.isExternal && (
-                        <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                          External Vetted
-                        </span>
-                      )}
-                      <span
-                        className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
-                          isVoting
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                            : isApproved
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                            : isOverdue
-                            ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                        }`}
-                      >
-                        {isOverdue ? 'OVERDUE' : req.status}
-                      </span>
+      {/* ─── Loans list ─── */}
+      <div className="px-4 py-4">
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="skeleton h-24 w-full" />
+            ))}
+          </div>
+        ) : filteredLoans.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] flex items-center justify-center">
+              <VoteIcon className="w-8 h-8 text-[var(--text-muted)] opacity-50" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">No Loans Found</h3>
+              <p className="text-xs text-[var(--text-muted)] mt-1">No loan records match this filter.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {filteredLoans.map((req) => {
+              const isVoting = req.status === 'VOTING';
+              const isOverdue = req.status === 'OVERDUE' || req.loan?.status === 'OVERDUE';
+              const statusKey = isOverdue ? 'OVERDUE' : req.status;
+              const status = STATUS_CONFIG[statusKey] || STATUS_CONFIG['VOTING'];
+
+              return (
+                <Link
+                  key={req.id}
+                  href={`/loans/detail?id=${req.id}`}
+                  id={`loan-${req.id}`}
+                  className="surface-card block p-4 hover:bg-[var(--bg-surface)] transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Icon */}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                        isVoting ? 'bg-amber-500/10' : isOverdue ? 'bg-red-500/10' : 'bg-g-500/10'
+                      }`}>
+                        {isVoting ? (
+                          <VoteIcon className="w-5 h-5 text-amber-500" />
+                        ) : isOverdue ? (
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                        ) : (
+                          <ArrowUpRight className="w-5 h-5 text-g-500" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                          <span className="text-sm font-bold text-[var(--text-primary)]">
+                            {req.borrower?.name}
+                          </span>
+                          {req.isExternal && (
+                            <span className="badge bg-purple-500/10 text-purple-500">External</span>
+                          )}
+                          <span className={`badge ${status.bg} ${status.text}`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] line-clamp-1">{req.purpose}</p>
+                        <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono">
+                          {req.circle?.name} · {req.tenureMonths}mo @ {req.proposedInterestPct}%
+                        </p>
+                      </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
-                      {req.purpose}
-                    </p>
-                    <span className="text-[10px] text-slate-400">
-                      {req.circle?.name} • {req.tenureMonths} mo @ {req.proposedInterestPct}% p.a.
-                    </span>
+                    <div className="text-right shrink-0 ml-2">
+                      <p className="text-base font-bold text-[var(--text-primary)] tabular-nums">
+                        {formatPaise(req.amount)}
+                      </p>
+                      <p className="text-[10px] text-[var(--text-muted)] flex items-center justify-end gap-0.5 mt-0.5">
+                        Details <ChevronRight className="w-3 h-3" />
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-base font-extrabold text-slate-900 dark:text-white tabular-nums block">
-                      {formatPaise(req.amount)}
-                    </span>
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center justify-end gap-0.5 mt-0.5">
-                      Details <ChevronRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-
-                {isVoting && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-slate-500">
-                      Votes: {req.votes?.length || 0} cast
-                    </span>
-                    <span className="text-[11px] font-semibold text-indigo-600">
-                      Target: {req.circle?.approvalThresholdPct}% threshold
-                    </span>
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      )}
+                  {/* Voting progress (Zerodha kite style) */}
+                  {isVoting && (
+                    <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+                      <div className="flex justify-between text-[10px] text-[var(--text-muted)] mb-1.5">
+                        <span>{req.votes?.length || 0} approvals cast</span>
+                        <span className="text-[var(--accent-blue)] font-semibold">
+                          {req.circle?.approvalThresholdPct}% threshold
+                        </span>
+                      </div>
+                      <div className="progress-bar">
+                        <div
+                          className="progress-bar-fill"
+                          style={{ width: `${Math.min(100, ((req.votes?.length || 0) / 3) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

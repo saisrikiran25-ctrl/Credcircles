@@ -4,60 +4,290 @@
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 210 40% 98%;
-    --muted: 215 20% 94%;
-    --muted-foreground: 215 16% 47%;
-    --border: 214 32% 91%;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-surface: #f0f4f8;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --accent-green: #00b386;
+    --accent-green-light: #e6faf5;
+    --accent-green-dark: #00916e;
+    --accent-red: #eb5757;
+    --accent-red-light: #fef2f2;
+    --accent-blue: #3d7eff;
+    --accent-blue-light: #eff4ff;
+    --accent-amber: #f59e0b;
+    --border: #e5e7eb;
+    --border-subtle: #f3f4f6;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 64% 7%;
-    --card-foreground: 213 31% 91%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 210 40% 98%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 65%;
-    --border: 216 34% 17%;
+    --bg-primary: #060f1e;
+    --bg-secondary: #0d1b2e;
+    --bg-card: #0d1b2e;
+    --bg-surface: #1a2a3d;
+    --text-primary: #f0f4f8;
+    --text-secondary: #8ba3bc;
+    --text-muted: #4a6682;
+    --accent-green: #00d09c;
+    --accent-green-light: #00d09c18;
+    --accent-green-dark: #00b386;
+    --accent-red: #f96b6b;
+    --accent-red-light: #f96b6b18;
+    --accent-blue: #5b8eff;
+    --accent-blue-light: #5b8eff18;
+    --accent-amber: #fbbf24;
+    --border: #1e3148;
+    --border-subtle: #0f2037;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#070b14] dark:text-slate-100 min-h-screen font-sans antialiased;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
-/* Tabular numerals for all monetary amounts */
+/* ─── Tabular numerals for monetary amounts ─── */
 .tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Groww-style chip/pill ─── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Positive / Negative coloring ─── */
+.text-positive {
+  color: var(--accent-green);
+}
+.text-negative {
+  color: var(--accent-red);
+}
+.bg-positive {
+  background-color: var(--accent-green-light);
+  color: var(--accent-green);
+}
+.bg-negative {
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+}
+
+/* ─── Surface card (Zerodha kite style) ─── */
+.surface-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ─── Bottom tab bar glow for active ─── */
+.tab-active-glow {
+  box-shadow: 0 -2px 12px rgba(0, 208, 156, 0.2);
+}
+
+/* ─── Groww-style gradient hero ─── */
+.hero-gradient-groww {
+  background: linear-gradient(135deg, #0d2137 0%, #0a1628 60%, #051020 100%);
+}
+
+.dark .hero-gradient-groww {
+  background: linear-gradient(135deg, #0a1f35 0%, #060f1e 60%, #030810 100%);
+}
+
+/* ─── Micro animations ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ─── Skeleton shimmer ─── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--border) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Gauge animation ─── */
+@keyframes dash {
+  to { stroke-dashoffset: 0; }
+}
+.animate-gauge {
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
+/* ─── Kite-style row hover ─── */
+.row-hover {
+  transition: background 0.15s ease;
+}
+.row-hover:hover {
+  background: var(--bg-surface);
+}
+
+/* ─── Filter pill row (Groww explore style) ─── */
+.filter-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.filter-pill.active {
+  background: var(--accent-green-light);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+/* ─── Groww-style section separator ─── */
+.section-divider {
+  height: 8px;
+  background: var(--bg-secondary);
+  margin: 0 -16px;
+}
+
+/* ─── Progress bar (Zerodha kite style) ─── */
+.progress-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent-green);
+  transition: width 0.6s ease;
+}
+
+/* ─── Bottom safe area ─── */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 72px);
+}
+
+/* ─── Scrollbar hide (mobile-like) ─── */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Zerodha-style amount display ─── */
+.amount-large {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.amount-medium {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-/* Glassmorphism effects */
-.glass {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* ─── Quick action button ─── */
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.15s;
+  cursor: pointer;
+  min-width: 72px;
+}
+.quick-action-btn:hover {
+  background: var(--bg-surface);
+  transform: translateY(-1px);
+}
+.quick-action-btn:active {
+  transform: translateY(0);
 }
 
-.dark .glass {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* ─── Status badge ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-/* Circle Pool Gauge animations */
-@keyframes dash {
-  to {
-    stroke-dashoffset: 0;
-  }
+/* ─── Input style (Groww forms) ─── */
+.input-groww {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.2s;
+  outline: none;
 }
-
-.animate-gauge {
-  transition: stroke-dashoffset 1s ease-in-out;
+.input-groww:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--accent-green-light);
+}
+.input-groww::placeholder {
+  color: var(--text-muted);
 }

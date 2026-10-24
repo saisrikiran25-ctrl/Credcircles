@@ -5,19 +5,20 @@ import Link from 'next/link';
 import {
   ShieldCheck,
   CheckCircle2,
-  Building2,
-  Smartphone,
-  MapPin,
-  Sparkles,
   ChevronRight,
-  ExternalLink,
   Crown,
-  FileText,
   Sliders,
   Check,
-  User,
   Users2,
   Lock,
+  LogOut,
+  Bell,
+  HelpCircle,
+  FileText,
+  BarChart3,
+  Zap,
+  Building2,
+  TrendingUp,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { DEMO_PERSONAS } from '@/lib/session';
@@ -28,217 +29,250 @@ export default function ProfilePage() {
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
 
+  const settingsItems = [
+    { icon: BarChart3, label: 'Pilot Metrics & Revenue', sub: 'Admin view', href: '/admin', action: 'chevron' },
+    { icon: FileText,  label: 'Terms of Service',        sub: 'v1.0 · Pilot',  href: '#',    action: 'chevron' },
+    { icon: Lock,      label: 'Connector & Ledger Principle', sub: 'No Fund Holding — Active', href: '#', action: 'badge', badge: 'Active' },
+  ];
+
   return (
-    <div className="p-4 space-y-4">
-      {/* User Header */}
-      <div className="p-5 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-subtle flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-indigo-600 text-white font-extrabold text-base flex items-center justify-center shadow-md">
-            {currentUser.avatar}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-                {currentUser.name}
-              </h2>
-              {currentUser.isVerified && (
-                <span title="eKYC Verified" className="inline-flex items-center">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                </span>
-              )}
+    <div className="animate-fade-in pb-6">
+
+      {/* ─── Profile Hero (Groww account header) ─── */}
+      <div className="hero-gradient-groww px-4 pt-5 pb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-g-500/5 blur-3xl pointer-events-none" />
+
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-g-500 text-white font-extrabold text-2xl flex items-center justify-center shadow-md">
+              {currentUser.avatar}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {currentUser.roleDescription}
-            </p>
-            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
-              {currentUser.city} • {currentUser.phone}
-            </span>
+            {currentUser.isVerified && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--bg-primary)] flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-g-500" />
+              </div>
+            )}
           </div>
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-white truncate">{currentUser.name}</h1>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">{currentUser.roleDescription}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5 font-mono">{currentUser.upiVpa}</p>
+          </div>
+
+          <Link
+            href="/profile/risk"
+            id="risk-score-profile"
+            className="text-right bg-white/10 rounded-xl px-3 py-2 hover:bg-white/15 transition-colors"
+          >
+            <span className="text-[10px] text-[var(--text-muted)] uppercase font-semibold block">Circle Score</span>
+            <span className="text-xl font-bold text-g-500 tabular-nums">85</span>
+            <span className="text-xs text-[var(--text-muted)]">/100</span>
+          </Link>
         </div>
 
-        <Link
-          href="/profile/risk"
-          className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-right hover:scale-105 transition-all"
-        >
-          <span className="text-[9px] font-bold text-indigo-500 uppercase block">Score</span>
-          <span className="text-sm font-extrabold text-indigo-700 dark:text-indigo-300 tabular-nums">
-            85/100
-          </span>
-        </Link>
+        {/* Location + phone */}
+        <div className="flex items-center gap-3 mt-4 text-xs text-[var(--text-muted)]">
+          <span className="flex items-center gap-1">📍 {currentUser.city}</span>
+          <span>·</span>
+          <span className="font-mono">{currentUser.phone}</span>
+        </div>
       </div>
 
-      {/* Switch Demo Persona Menu */}
-      <div className="p-4 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-subtle space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Switch Demo Persona
-          </h3>
-          <span className="text-[10px] text-indigo-600 font-semibold">1-Click Switch</span>
-        </div>
-
-        <div className="space-y-1.5">
-          {DEMO_PERSONAS.map((p) => {
+      {/* ─── SWITCH PERSONA ─── */}
+      <div className="px-4 py-4">
+        <h2 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3">
+          Switch Demo Persona
+        </h2>
+        <div className="surface-card overflow-hidden">
+          {DEMO_PERSONAS.map((p, i) => {
             const isActive = p.id === currentUser.id;
             return (
               <button
                 key={p.id}
+                id={`persona-${p.id}`}
                 onClick={() => setCurrentUserId(p.id)}
-                className={`w-full p-2.5 rounded-2xl text-xs flex items-center justify-between text-left transition-all ${
-                  isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 font-bold'
-                    : 'bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
-                }`}
+                className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                  i < DEMO_PERSONAS.length - 1 ? 'border-b border-[var(--border-subtle)]' : ''
+                } ${isActive ? 'bg-g-500/5' : 'hover:bg-[var(--bg-surface)]'}`}
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-7 h-7 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                    isActive ? 'bg-g-500 text-white' : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border)]'
+                  }`}>
                     {p.avatar}
-                  </span>
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-white leading-tight">
+                  </div>
+                  <div className="text-left">
+                    <p className={`text-sm font-semibold ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                       {p.name}
-                    </div>
-                    <div className="text-[10px] text-slate-500">{p.roleDescription}</div>
+                    </p>
+                    <p className="text-[11px] text-[var(--text-muted)]">{p.roleDescription}</p>
                   </div>
                 </div>
-                {isActive && <Check className="w-4 h-4 text-indigo-600 shrink-0" />}
+                {isActive
+                  ? <Check className="w-4 h-4 text-g-500 shrink-0" />
+                  : <ChevronRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+                }
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Verification & KYC Status */}
-      <div className="p-4 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-subtle space-y-2.5 text-xs">
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            Identity Verification (eKYC)
-          </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-            VERIFIED
-          </span>
-        </div>
+      <div className="section-divider" />
 
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl space-y-1">
-          <div className="flex justify-between">
-            <span className="text-slate-500">Masked PAN:</span>
-            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-              ABCDE****F
-            </span>
+      {/* ─── KYC / IDENTITY ─── */}
+      <div className="px-4 py-4">
+        <h2 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3">
+          Identity & KYC
+        </h2>
+        <div className="surface-card overflow-hidden">
+          {/* Verified header */}
+          <div className="px-4 py-3 flex items-center justify-between border-b border-[var(--border-subtle)]">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-g-500" />
+              <span className="text-sm font-semibold text-[var(--text-primary)]">eKYC Status</span>
+            </div>
+            <span className="badge bg-g-500/10 text-g-500">VERIFIED</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-500">Masked Aadhaar:</span>
-            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-              ********8821
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-500">Registered UPI VPA:</span>
-            <span className="font-mono font-bold text-indigo-600">{currentUser.upiVpa}</span>
+
+          {/* Details */}
+          {[
+            { label: 'Masked PAN', value: 'ABCDE****F', mono: true },
+            { label: 'Masked Aadhaar', value: '********8821', mono: true },
+            { label: 'UPI VPA', value: currentUser.upiVpa, mono: true, highlight: true },
+          ].map((row, i) => (
+            <div
+              key={i}
+              className={`px-4 py-3 flex items-center justify-between ${i < 2 ? 'border-b border-[var(--border-subtle)]' : ''}`}
+            >
+              <span className="text-xs text-[var(--text-muted)]">{row.label}</span>
+              <span className={`text-xs font-semibold ${row.mono ? 'font-mono' : ''} ${row.highlight ? 'text-g-500' : 'text-[var(--text-primary)]'}`}>
+                {row.value}
+              </span>
+            </div>
+          ))}
+
+          {/* Action */}
+          <div className="px-4 py-3 border-t border-[var(--border-subtle)]">
+            <button
+              id="re-verify-kyc-btn"
+              onClick={() => setIsKycModalOpen(true)}
+              className="w-full py-2.5 bg-[var(--bg-surface)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-xs font-semibold transition-all"
+            >
+              Re-verify / Update Simulated eKYC
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={() => setIsKycModalOpen(true)}
-          className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-[11px] font-bold transition-all"
-        >
-          Re-verify / Update Simulated eKYC
-        </button>
       </div>
 
-      {/* Regulatory Compliance Mode Toggle */}
-      <div className="p-4 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 shadow-subtle space-y-3 text-xs">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Sliders className="w-3.5 h-3.5 text-indigo-500" />
-            Regulatory Compliance Mode
-          </h3>
-          <span className="text-[10px] text-indigo-600 font-mono font-bold">Config</span>
+      <div className="section-divider" />
+
+      {/* ─── COMPLIANCE MODE ─── */}
+      <div className="px-4 py-4">
+        <h2 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <Sliders className="w-3.5 h-3.5" />
+          Regulatory Mode
+        </h2>
+
+        <div className="grid grid-cols-2 gap-2.5 mb-3">
+          {[
+            { id: 'PARTNERED_ESCROW', title: 'Option A', sub: 'Licensed NBFC-P2P LSP' },
+            { id: 'CLOSED_CIRCLES',   title: 'Option C', sub: 'Strictly Closed Circles' },
+          ].map((opt) => {
+            const isActive = complianceMode === opt.id;
+            return (
+              <button
+                key={opt.id}
+                id={`compliance-${opt.id.toLowerCase()}`}
+                onClick={() => setComplianceMode(opt.id as any)}
+                className={`p-3.5 rounded-xl border text-left transition-all ${
+                  isActive
+                    ? 'bg-g-500/10 border-g-500 text-[var(--text-primary)]'
+                    : 'bg-[var(--bg-surface)] border-[var(--border)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  {isActive && <div className="w-1.5 h-1.5 rounded-full bg-g-500" />}
+                  <span className="text-xs font-bold">{opt.title}</span>
+                </div>
+                <span className="text-[11px] opacity-70">{opt.sub}</span>
+              </button>
+            );
+          })}
         </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setComplianceMode('PARTNERED_ESCROW')}
-            className={`p-3 rounded-2xl border text-left transition-all ${
-              complianceMode === 'PARTNERED_ESCROW'
-                ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-500 text-indigo-950 dark:text-indigo-200 font-bold'
-                : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <div className="text-xs">Option A (Partnered)</div>
-            <div className="text-[10px] opacity-75 mt-0.5">Licensed NBFC-P2P LSP</div>
-          </button>
-
-          <button
-            onClick={() => setComplianceMode('CLOSED_CIRCLES')}
-            className={`p-3 rounded-2xl border text-left transition-all ${
-              complianceMode === 'CLOSED_CIRCLES'
-                ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-500 text-indigo-950 dark:text-indigo-200 font-bold'
-                : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <div className="text-xs">Option C (Closed)</div>
-            <div className="text-[10px] opacity-75 mt-0.5">Strictly Closed Circles</div>
-          </button>
-        </div>
-
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-[var(--text-muted)] px-1">
           {complianceMode === 'PARTNERED_ESCROW'
             ? 'Option A enables cross-group lending with simulated NBFC-P2P partner escrow audits.'
             : 'Option C disables all external/cross-group lending to stay within private community exemptions.'}
         </p>
       </div>
 
-      {/* Circle Premium Upgrade Card */}
-      <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200/80 dark:border-amber-900/60 shadow-subtle flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-500 text-white shrink-0">
-            <Crown className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-amber-950 dark:text-amber-200">
-              Circle Pro (₹99/month)
-            </div>
-            <div className="text-[11px] text-amber-800/80 dark:text-amber-300">
-              Unlocks portfolio analytics, auto-invest, & priority support.
-            </div>
-          </div>
-        </div>
+      <div className="section-divider" />
 
-        <button
-          onClick={() => setIsPremiumModalOpen(true)}
-          className="py-1.5 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow transition-all shrink-0"
-        >
-          Manage
-        </button>
-      </div>
-
-      {/* Legal & Explainer Links */}
-      <div className="space-y-1.5 text-xs">
-        <Link
-          href="/admin"
-          className="p-3 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800"
-        >
-          <span className="font-semibold text-slate-800 dark:text-slate-200">
-            Pilot Metrics & Revenue View (Admin)
-          </span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </Link>
-        <div className="p-3 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
-          <span className="font-semibold text-slate-800 dark:text-slate-200">
-            Connector & Ledger Principle (No Fund Holding)
-          </span>
-          <span className="text-[10px] font-bold text-emerald-600">Active</span>
-        </div>
-        <div className="p-3 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
-          <span className="font-semibold text-slate-800 dark:text-slate-200">
-            Terms of Service & Youth Privacy Policy
-          </span>
-          <span className="text-[10px] text-slate-400">v1.0 (Pilot)</span>
+      {/* ─── CIRCLE PRO UPGRADE ─── */}
+      <div className="px-4 py-4">
+        <div className="surface-card p-4 bg-gradient-to-r from-amber-500/5 to-orange-500/5 border-amber-500/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[var(--text-primary)]">Circle Pro</p>
+                <p className="text-xs text-[var(--text-muted)]">₹99/month · Analytics & more</p>
+              </div>
+            </div>
+            <button
+              id="upgrade-pro-btn"
+              onClick={() => setIsPremiumModalOpen(true)}
+              className="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95"
+            >
+              Upgrade
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Modals */}
+      <div className="section-divider" />
+
+      {/* ─── SETTINGS LINKS ─── */}
+      <div className="px-4 py-4">
+        <h2 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3">
+          More
+        </h2>
+        <div className="surface-card overflow-hidden">
+          {settingsItems.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                id={`settings-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                className={`flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--bg-surface)] transition-colors ${
+                  i < settingsItems.length - 1 ? 'border-b border-[var(--border-subtle)]' : ''
+                }`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-[var(--bg-surface)] flex items-center justify-center border border-[var(--border)] shrink-0">
+                  <Icon className="w-4 h-4 text-[var(--text-secondary)]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
+                  {item.sub && <p className="text-[11px] text-[var(--text-muted)]">{item.sub}</p>}
+                </div>
+                {item.action === 'badge' && item.badge ? (
+                  <span className="badge bg-g-500/10 text-g-500">{item.badge}</span>
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─── MODALS ─── */}
       <KycVerificationModal
         isOpen={isKycModalOpen}
         onClose={() => setIsKycModalOpen(false)}
@@ -247,39 +281,48 @@ export default function ProfilePage() {
       />
 
       {isPremiumModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5 space-y-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-              <Crown className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">Circle Pro Subscription</h3>
-              <p className="text-xs text-slate-500 mt-1">
-                ₹99/month per group (Simulated LSP service fee model from Section 3.8b).
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setIsPremiumModalOpen(false)}>
+          <div
+            className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-t-3xl sm:rounded-3xl shadow-[var(--shadow-modal)] p-6 space-y-5 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mx-auto mb-3">
+                <Crown className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">Circle Pro</h3>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                ₹99/month per group · Simulated LSP fee model (§3.8b)
               </p>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-left text-xs space-y-1.5 text-slate-600 dark:text-slate-300">
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-500" />
-                <span>Deep portfolio analytics & exposure graphs</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-500" />
-                <span>Automated monthly mandate scheduling</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-500" />
-                <span>Priority mediator escalation support</span>
-              </div>
+
+            <div className="space-y-2.5">
+              {[
+                'Deep portfolio analytics & exposure graphs',
+                'Automated monthly mandate scheduling',
+                'Priority mediator escalation support',
+              ].map((feature) => (
+                <div key={feature} className="flex items-center gap-3 p-3 bg-[var(--bg-surface)] rounded-lg">
+                  <CheckCircle2 className="w-4 h-4 text-g-500 shrink-0" />
+                  <span className="text-xs text-[var(--text-secondary)]">{feature}</span>
+                </div>
+              ))}
             </div>
+
             <button
               onClick={() => {
                 alert('Circle Pro active in prototype mode!');
                 setIsPremiumModalOpen(false);
               }}
-              className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-2xl text-xs shadow-md"
+              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-[0.98]"
             >
               Confirm Subscription (Simulated)
+            </button>
+            <button
+              onClick={() => setIsPremiumModalOpen(false)}
+              className="w-full py-2 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+            >
+              Cancel
             </button>
           </div>
         </div>
